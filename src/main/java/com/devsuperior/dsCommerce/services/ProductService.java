@@ -1,16 +1,17 @@
 package com.devsuperior.dsCommerce.services;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devsuperior.dsCommerce.dto.ProductDTO;
 import com.devsuperior.dsCommerce.entities.Product;
 import com.devsuperior.dsCommerce.repositories.ProductRepository;
+import com.devsuperior.dsCommerce.services.exceptions.DatabaseException;
 import com.devsuperior.dsCommerce.services.exceptions.ResourceNotFoundException;
 
 @Service
@@ -33,11 +34,15 @@ public class ProductService {
 
     @Transactional
     public ProductDTO insert(ProductDTO dto) {
+        try{
         Product entity = new Product();
         copyDTOToEntity(dto, entity);
         entity = repository.save(entity);
         return new ProductDTO(entity);
+    }catch (Exception e){
+        throw new ResourceNotFoundException("Recurso não encontrado!");
     }
+}
 
     @Transactional
     public ProductDTO update(Long id, ProductDTO dto) {
@@ -47,10 +52,19 @@ public class ProductService {
         return new ProductDTO(entity);
     }
 
-    @Transactional
-    public void delete(Long id) {
-        repository.deleteById(id);
-    }
+    @Transactional(propagation = Propagation.SUPPORTS)
+public void delete(Long id) {
+	if (!repository.existsById(id)) {
+		throw new ResourceNotFoundException("Recurso não encontrado");
+	}
+	try {
+        	repository.deleteById(id);    		
+	}
+    	catch (DataIntegrityViolationException e) {
+        	throw new DatabaseException("Falha de integridade referencial");
+   	}
+}
+
 
     private void copyDTOToEntity(ProductDTO dto, Product entity) {
         entity.setName(dto.getName());
