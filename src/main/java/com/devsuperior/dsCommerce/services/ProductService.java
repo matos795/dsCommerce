@@ -34,14 +34,10 @@ public class ProductService {
 
     @Transactional
     public ProductDTO insert(ProductDTO dto) {
-        try{
         Product entity = new Product();
         copyDTOToEntity(dto, entity);
         entity = repository.save(entity);
         return new ProductDTO(entity);
-    }catch (Exception e){
-        throw new ResourceNotFoundException("Recurso não encontrado!");
-    }
 }
 
     @Transactional
