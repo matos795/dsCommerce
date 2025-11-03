@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.devsuperior.dsCommerce.dto.CategoryDTO;
 import com.devsuperior.dsCommerce.dto.ProductDTO;
 import com.devsuperior.dsCommerce.dto.ProductMinDTO;
+import com.devsuperior.dsCommerce.entities.Category;
 import com.devsuperior.dsCommerce.entities.Product;
 import com.devsuperior.dsCommerce.repositories.ProductRepository;
 import com.devsuperior.dsCommerce.services.exceptions.DatabaseException;
@@ -68,5 +70,11 @@ public void delete(Long id) {
         entity.setDescription(dto.getDescription());
         entity.setPrice(dto.getPrice());
         entity.setImgUrl(dto.getImgUrl());
+        entity.getCategories().clear();
+        for (CategoryDTO catDTO : dto.getCategories()) {
+            Category cat = new Category();
+            cat.setId(catDTO.getId());
+            entity.getCategories().add(cat);
+        }
     }
 }
